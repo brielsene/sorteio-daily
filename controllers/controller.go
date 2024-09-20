@@ -12,6 +12,7 @@ import (
 var pessoas []models.Pessoa
 
 func CriaNovaPessoa(c *gin.Context) {
+	CarregarPessoas()
 	var model models.Pessoa
 	err := c.ShouldBindJSON(&model)
 	if err != nil {
@@ -23,8 +24,11 @@ func CriaNovaPessoa(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
+
 	defer file.Close()
 	encoder := json.NewEncoder(file)
+	id := len(pessoas)
+	model.ID = id + 1
 	pessoas = append(pessoas, model)
 	if err := encoder.Encode(pessoas); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
@@ -44,4 +48,13 @@ func CarregarPessoas() {
 		fmt.Println("error decoding JSON")
 		return
 	}
+}
+
+func ListPessoas(c *gin.Context) {
+	CarregarPessoas()
+	if pessoas != nil {
+		c.JSON(200, pessoas)
+		return
+	}
+	c.JSON(204, nil)
 }

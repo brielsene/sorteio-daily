@@ -9,5 +9,6 @@ import (
 func HandleRequests() {
 	r := gin.Default()
 	r.POST("/pessoa", controllers.CriaNovaPessoa)
+	r.GET("/pessoas", controllers.ListPessoas)
 	r.Run(":8000")
 }
