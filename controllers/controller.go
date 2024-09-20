@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"sorteio-daily/models"
 
@@ -57,4 +58,41 @@ func ListPessoas(c *gin.Context) {
 		return
 	}
 	c.JSON(204, nil)
+}
+
+func SorteiaPessoa(c *gin.Context) {
+	idSorteado := SorteiaId()
+	file, err := os.Create("data/data.json")
+	encoder := json.NewEncoder(file)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+	}
+	if idSorteado == 0 {
+		c.JSON(400, "don't have pessoas")
+		return
+	}
+	for i, p := range pessoas {
+		if p.ID == idSorteado {
+			p.Sorteado = true
+			pessoas[i] = p
+			if err := encoder.Encode(pessoas); err != nil {
+				c.JSON(400, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.JSON(200, p)
+			return
+		}
+	}
+	c.JSON(400, gin.H{"not found pessoa with id: ": idSorteado})
+}
+
+func SorteiaId() int {
+	CarregarPessoas()
+	if pessoas != nil {
+		idSorteado := rand.IntN(len(pessoas)) + 1
+		return idSorteado
+	}
+	fmt.Println("not found pessoas")
+	return 0
 }
