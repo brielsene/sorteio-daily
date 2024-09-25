@@ -61,30 +61,53 @@ func ListPessoas(c *gin.Context) {
 }
 
 func SorteiaPessoa(c *gin.Context) {
-	idSorteado := SorteiaId()
-	file, err := os.Create("data/data.json")
-	encoder := json.NewEncoder(file)
-	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-	}
-	if idSorteado == 0 {
-		c.JSON(400, "don't have pessoas")
-		return
-	}
-	for i, p := range pessoas {
-		if p.ID == idSorteado {
-			p.Sorteado = true
-			pessoas[i] = p
-			if err := encoder.Encode(pessoas); err != nil {
-				c.JSON(400, gin.H{"error": err.Error()})
-				return
-			}
+	CarregarPessoas()
+	var listPessoaNSorteadas []models.Pessoa
+	for _, ps := range pessoas {
+		if ps.Sorteado == false {
+			listPessoaNSorteadas = append(listPessoaNSorteadas, ps)
 
-			c.JSON(200, p)
-			return
 		}
 	}
-	c.JSON(400, gin.H{"not found pessoa with id: ": idSorteado})
+	if listPessoaNSorteadas == nil {
+		for i, p := range pessoas {
+			p.Sorteado = false
+			pessoas[i] = p
+		}
+		for _, ps := range pessoas {
+			if ps.Sorteado == false {
+				listPessoaNSorteadas = append(listPessoaNSorteadas, ps)
+
+			}
+		}
+	}
+	idSorteado := rand.IntN(len(listPessoaNSorteadas))
+
+	fmt.Println(listPessoaNSorteadas)
+	fmt.Println(idSorteado)
+	fmt.Println(listPessoaNSorteadas[idSorteado])
+
+	pessoaSorteada := listPessoaNSorteadas[idSorteado]
+	for i, p := range pessoas {
+		if p.ID == pessoaSorteada.ID {
+
+			pessoaSorteada.Sorteado = true
+			pessoas[i] = pessoaSorteada
+			file, err := os.Create("data/data.json")
+			if err != nil {
+				c.JSON(400, gin.H{"error": "error to open json" + err.Error()})
+				return
+			}
+			defer file.Close()
+			encoder := json.NewEncoder(file)
+			if err := encoder.Encode(&pessoas); err != nil {
+				c.JSON(400, gin.H{"error": "error to encode: " + err.Error()})
+				return
+			}
+			c.JSON(200, &pessoaSorteada)
+		}
+	}
+
 }
 
 func SorteiaId() int {
