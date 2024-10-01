@@ -11,5 +11,6 @@ func HandleRequests() {
 	r.POST("/pessoa", controllers.CriaNovaPessoa)
 	r.GET("/pessoas", controllers.ListPessoas)
 	r.POST("/pessoas/sort", controllers.SorteiaPessoa)
+	r.DELETE("/pessoas/:id", controllers.DeletePessoaById)
 	r.Run(":8000")
 }
