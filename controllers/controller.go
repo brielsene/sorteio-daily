@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"os"
 	"sorteio-daily/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -118,4 +119,33 @@ func SorteiaId() int {
 	}
 	fmt.Println("not found pessoas")
 	return 0
+}
+
+func DeletePessoaById(c *gin.Context) {
+	CarregarPessoas()
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "error to format to int: " + err.Error()})
+		return
+	}
+	for i, pessoa := range pessoas {
+		if pessoa.ID == id {
+			file, err := os.Create("data/data.json")
+			if err != nil {
+				c.JSON(400, gin.H{"error": err.Error()})
+				return
+			}
+			defer file.Close()
+			pessoas = append(pessoas[:i], pessoas[i+1:]...)
+			encoder := json.NewEncoder(file)
+			if err := encoder.Encode(pessoas); err != nil {
+				c.JSON(400, gin.H{"error to encode file": err.Error()})
+				return
+			}
+			c.JSON(200, gin.H{"Pessoa deletada com sucesso": pessoas})
+			return
+		}
+	}
+
 }
