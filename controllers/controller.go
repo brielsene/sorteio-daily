@@ -149,3 +149,29 @@ func DeletePessoaById(c *gin.Context) {
 	}
 
 }
+
+func UpdatedPessoaById(c *gin.Context) {
+	idPessoa, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "error to conver idPessoa" + err.Error()})
+		return
+	}
+
+	var pessoaModel models.Pessoa
+	err = c.ShouldBindJSON(&pessoaModel)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "should bind json pessoa: " + err.Error()})
+		return
+	}
+
+	for i, p := range pessoas {
+		if p.ID == idPessoa {
+			p.ID = idPessoa
+			pessoas[i] = p
+			c.JSON(200, pessoas[i])
+			return
+		}
+	}
+	c.JSON(404, gin.H{"message": "pessoa not found"})
+
+}
