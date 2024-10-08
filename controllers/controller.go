@@ -167,7 +167,7 @@ func UpdatedPessoaById(c *gin.Context) {
 	for i, p := range pessoas {
 		if p.ID == idPessoa {
 			p.ID = idPessoa
-			pessoas[i] = p
+			pessoas[i] = pessoaModel
 			c.JSON(200, pessoas[i])
 			return
 		}
